@@ -3,6 +3,7 @@ from PIL import Image, ImageEnhance, ImageFilter
 import numpy as np
 import cv2
 import rembg
+import io
 
 # Streamlit app
 def main():
@@ -26,7 +27,10 @@ def main():
             output_array = rembg.remove(input_array)
             output_image = Image.fromarray(output_array)
             st.image(output_image, caption='Background Removed', use_column_width=True)
-            st.download_button('Download Image', output_image.tobytes(), file_name='background_removed.png')
+            
+            buf = io.BytesIO()
+            output_image.save(buf, format="PNG")
+            st.download_button('Download Image', buf.getvalue(), file_name='background_removed.png', mime='image/png')
 
         elif option == 'Background Replacement':
             bg_file = st.file_uploader('Upload background image', type=['jpg', 'png', 'jpeg'])
@@ -38,7 +42,10 @@ def main():
                 output_image = output_image.resize(bg_image.size)
                 combined = Image.alpha_composite(bg_image.convert('RGBA'), output_image)
                 st.image(combined, caption='Background Replaced', use_column_width=True)
-                st.download_button('Download Image', combined.tobytes(), file_name='background_replaced.png')
+                
+                buf = io.BytesIO()
+                combined.save(buf, format="PNG")
+                st.download_button('Download Image', buf.getvalue(), file_name='background_replaced.png', mime='image/png')
 
         elif option == 'Image Enhancements':
             brightness = st.slider('Brightness', 0.5, 1.5, 1.0)
@@ -56,7 +63,10 @@ def main():
                 enhanced = enhanced.filter(ImageFilter.GaussianBlur(blur))
 
             st.image(enhanced, caption='Enhanced Image', use_column_width=True)
-            st.download_button('Download Image', enhanced.tobytes(), file_name='enhanced.png')
+            
+            buf = io.BytesIO()
+            enhanced.save(buf, format="PNG")
+            st.download_button('Download Image', buf.getvalue(), file_name='enhanced.png', mime='image/png')
 
         elif option == 'Artistic Filters':
             filter_type = st.selectbox('Choose a filter:', ['Greyscale', 'Cartoon', 'Sketch', 'Neon Glow'])
@@ -65,28 +75,31 @@ def main():
             if filter_type == 'Greyscale':
                 filtered = image.convert('L')
             elif filter_type == 'Cartoon':
-                gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
+                gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
                 gray = cv2.medianBlur(gray, 5)
                 edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
                 color = cv2.bilateralFilter(img_array, 9, 300, 300)
                 cartoon = cv2.bitwise_and(color, color, mask=edges)
                 filtered = Image.fromarray(cartoon)
             elif filter_type == 'Sketch':
-                gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
+                gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
                 inverted = 255 - gray
                 blurred = cv2.GaussianBlur(inverted, (21, 21), 0)
                 inverted_blurred = 255 - blurred
                 sketch = cv2.divide(gray, inverted_blurred, scale=256.0)
                 filtered = Image.fromarray(sketch)
             elif filter_type == 'Neon Glow':
-                gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
+                gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
                 edges = cv2.Canny(gray, 100, 200)
-                edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+                edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
                 neon = cv2.addWeighted(img_array, 0.7, edges, 0.3, 0)
                 filtered = Image.fromarray(neon)
 
             st.image(filtered, caption=f'{filter_type} Filter', use_column_width=True)
-            st.download_button('Download Image', filtered.tobytes(), file_name=f'{filter_type.lower()}.png')
+            
+            buf = io.BytesIO()
+            filtered.save(buf, format="PNG")
+            st.download_button('Download Image', buf.getvalue(), file_name=f'{filter_type.lower().replace(" ", "_")}.png', mime='image/png')
 
 if __name__ == '__main__':
     main()
