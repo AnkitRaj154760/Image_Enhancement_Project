@@ -15,7 +15,7 @@ def main():
 
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
-        st.image(image, caption='Uploaded Image', use_column_width=True)
+        st.image(image, caption='Uploaded Image', use_container_width=True)
 
         # Sidebar options
         st.sidebar.header('Edit Options')
@@ -26,7 +26,7 @@ def main():
             input_array = np.array(image)
             output_array = rembg.remove(input_array)
             output_image = Image.fromarray(output_array)
-            st.image(output_image, caption='Background Removed', use_column_width=True)
+            st.image(output_image, caption='Background Removed', use_container_width=True)
             
             buf = io.BytesIO()
             output_image.save(buf, format="PNG")
@@ -41,7 +41,7 @@ def main():
                 output_image = Image.fromarray(output_array)
                 output_image = output_image.resize(bg_image.size)
                 combined = Image.alpha_composite(bg_image.convert('RGBA'), output_image)
-                st.image(combined, caption='Background Replaced', use_column_width=True)
+                st.image(combined, caption='Background Replaced', use_container_width=True)
                 
                 buf = io.BytesIO()
                 combined.save(buf, format="PNG")
@@ -62,7 +62,7 @@ def main():
             if blur > 0:
                 enhanced = enhanced.filter(ImageFilter.GaussianBlur(blur))
 
-            st.image(enhanced, caption='Enhanced Image', use_column_width=True)
+            st.image(enhanced, caption='Enhanced Image', use_container_width=True)
             
             buf = io.BytesIO()
             enhanced.save(buf, format="PNG")
@@ -95,7 +95,7 @@ def main():
                 neon = cv2.addWeighted(img_array, 0.7, edges, 0.3, 0)
                 filtered = Image.fromarray(neon)
 
-            st.image(filtered, caption=f'{filter_type} Filter', use_column_width=True)
+            st.image(filtered, caption=f'{filter_type} Filter', use_container_width=True)
             
             buf = io.BytesIO()
             filtered.save(buf, format="PNG")
